@@ -8,8 +8,10 @@
     <artifactId>blog</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
+    <!--子模块-->
     <modules>
         <module>eurekaServer</module>
+        <module>zuul</module>
     </modules>
 
     <!-- 配置在父工程中要管理的依赖 -->

@@ -1,0 +1,20 @@
+server:
+  port: 8762
+spring:
+  application:
+    name: zuul
+  #redis:
+ #   host: 192.168.19.100
+ # session:
+ #   store-type: redis
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka/
+zuul:
+  ignored-services: "*"
+  sensitive-headers: "*"  # 在Zuul向其他微服务重定向时保持原本头信息（请求头、响应头）
+ #路由
+  routes:
+    api-a:
+      path:
