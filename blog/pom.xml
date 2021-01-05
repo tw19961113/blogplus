@@ -12,16 +12,27 @@
     <modules>
         <module>eurekaServer</module>
         <module>zuul</module>
+        <module>userManage</module>
     </modules>
-
-    <!-- 配置在父工程中要管理的依赖 -->
+    <!--版本统一管理-->
+    <properties>
+        <spring-cloud.version>Finchley.M9</spring-cloud.version>
+        <springboot.version>2.0.0.RELEASE</springboot.version>
+        <mysql.version>8.0.19</mysql.version>
+        <druid.version>1.1.21</druid.version>
+        <mybatis.plus.version>3.3.1</mybatis.plus.version>
+        <lombok.version>1.18.2</lombok.version>
+    </properties>
+    <!-- 配置在父工程中要管理的依赖
+    dependencyManagement中定义的只是依赖的声明，
+    并不实现引入，因此子项目需要显式的声明需要用的依赖。-->
     <dependencyManagement>
         <dependencies>
             <!-- 导入SpringCloud需要使用的依赖信息 -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Finchley.M9</version>
+                <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <!-- import依赖范围表示将spring-cloud-dependencies包中的依赖信息导入 -->
                 <scope>import</scope>
@@ -30,19 +41,39 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.0.0.RELEASE</version>
+                <version>${springboot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!--数据库相关-->
             <dependency>
-                <groupId>org.mybatis.spring.boot</groupId>
-                <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>2.1.0</version>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.version}</version>
             </dependency>
+            <!-- 数据源，数据库连接池，由阿里提供 -->
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>
-                <version>1.0.5</version>
+                <version>${druid.version}</version>
+            </dependency>
+            <!--mybatisPlus-->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus</artifactId>
+                <version>${mybatis.plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-generator</artifactId>
+                <version>${mybatis.plus.version}</version>
+            </dependency>
+            <!-- 实体类注解 -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <scope>provided</scope>
+                <version>${lombok.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

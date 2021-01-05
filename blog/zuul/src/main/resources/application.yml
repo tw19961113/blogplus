@@ -14,7 +14,11 @@ eureka:
 zuul:
   ignored-services: "*"
   sensitive-headers: "*"  # 在Zuul向其他微服务重定向时保持原本头信息（请求头、响应头）
- #路由
+#路由
   routes:
     api-a:
-      path:
+      service-id: userManage #微服务的name
+      path: /user/** #这里一定要使用两个“*”号，不然“/”路径后面的多层路径将无法访问
+ribbon:
+  ReadTimeout: 10000
+  ConnectTimeout: 10000

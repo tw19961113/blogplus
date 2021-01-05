@@ -5,7 +5,7 @@ eureka:
     hostname: eurekaServer
     preferIpAddress: true
   client:
-    register-with-eureka: false
-    fetch-registry: false
+    register-with-eureka: false #自己就是注册中心，不用注册自己
+    fetch-registry: false #要不要去注册中心获取其他服务的地址
     service-url:
       defaultZone: http://127.0.0.1:8761/eureka/
