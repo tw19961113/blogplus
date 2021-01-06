@@ -10,9 +10,9 @@
     <div class="login-container">
       <div class="login-box">
         <div class="login-title">
-          <h2>Remango-Blog 登录平台</h2>
+          <h2>BlogPlus 登录平台</h2>
           <p>基于element-ui的极致体验</p>
-        </div>
+      </div>
         <div class="login-form-wrapper">
           <form>
             <el-form ref="loginForm" :model="loginForm" :rules="rules">
@@ -40,7 +40,6 @@
                   :class="[isPassVerify? 'red':'']"
                   placeholder="验证码"
                   :prefix-icon="isPassVerify? 'fa fa-check': 'fa fa-image'"
-                  maxLength = '5'
                   v-model="verificationCode">
                 </el-input>
                 <a class="verification-code-wrapper" href="#"><img title="点击刷新" :src="imgUrl" class="verification-code-img" @click="refreshImg"/></a>
@@ -57,12 +56,11 @@
 </template>
 
 <script>
-import qs from 'qs'
 import {sha256} from 'js-sha256'
+import {getVerification} from "../../../api/user/login.js";
 export default {
   name: 'login',
   data () {
-    let staticImgUrl = '/blog/captcha/get?'
     return {
       loginForm: {
         username: '',
@@ -70,9 +68,7 @@ export default {
       },
       verificationCode: '',
       isPassVerify: false,
-      staticImgUrl: staticImgUrl,
-      imgUrl: staticImgUrl + (new Date()).getTime(),
-      captchaVerifyUrl: '/blog/captcha/verify',
+      imgUrl: null,
       rules: {
         username: [
           { required: true, message: '输入不能为空', trigger: 'change' }
@@ -83,32 +79,20 @@ export default {
       }
     }
   },
-  watch: {
-    verificationCode (newValue, oldValue) {
-      if (newValue.length < 5) {
-        this.isPassVerify = false
-      } else {
-        this.axios.post(this.captchaVerifyUrl, qs.stringify({ captcha: this.verificationCode }),
-          {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).then(response => {
-          this.isPassVerify = response.data.errorCode === 0
-        }).catch(error => {
-          this.isPassVerify = false
-          console.log(error)
-        })
-      }
-    }
-  },
-  mounted () {
-    document.onkeydown = () => {
-      if (window.event && window.event.keyCode === 13 && this.$route.name === 'login' && this.isPassVerify) {
-        this.loginSystem('loginForm')
-      }
-    }
+  created() {
+    //页面初次加载图形验证码
+    this.refreshImg();
   },
   methods: {
+    /**
+     * 获取验证码
+     */
     refreshImg () {
-      this.verificationCode = ''
-      this.imgUrl = this.staticImgUrl + (new Date()).getTime()
+      getVerification()
+        .catch(err=>{
+        this.imgUrl = 'data:image/jpeg;base64,' +
+          btoa(new Uint8Array(err.data).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+      });
     },
     loginSystem (formName) {
       this.$refs[formName].validate(valid => {

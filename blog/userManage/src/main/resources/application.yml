@@ -20,6 +20,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://127.0.0.1:8761/eureka
-
+  #指明日志存放位置
+logging:
+  file: E://logs/${spring.application.name}-${server.port}.logs
 
 

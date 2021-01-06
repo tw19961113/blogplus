@@ -22,3 +22,4 @@ zuul:
 ribbon:
   ReadTimeout: 10000
   ConnectTimeout: 10000
+
