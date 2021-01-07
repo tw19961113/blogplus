@@ -37,15 +37,14 @@
                 <el-input
                   type="text"
                   class="verification-code-input"
-                  :class="[isPassVerify? 'red':'']"
                   placeholder="验证码"
-                  :prefix-icon="isPassVerify? 'fa fa-check': 'fa fa-image'"
-                  v-model="verificationCode">
+                  :prefix-icon="'fa fa-image'"
+                  v-model="loginForm.verificationCode">
                 </el-input>
                 <a class="verification-code-wrapper" href="#"><img title="点击刷新" :src="imgUrl" class="verification-code-img" @click="refreshImg"/></a>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="loginSystem('loginForm')" class="login-button" :disabled="!isPassVerify">Sign in</el-button>
+                <el-button type="primary" @click="doLogin('loginForm')" class="login-button">登录</el-button>
               </el-form-item>
             </el-form>
           </form>
@@ -56,25 +55,24 @@
 </template>
 
 <script>
-import {sha256} from 'js-sha256'
-import {getVerification} from "../../../api/user/login.js";
+import md5 from 'js-md5';
+import {getVerification,doLogin} from "../../../api/user/login.js";
 export default {
   name: 'login',
   data () {
     return {
       loginForm: {
         username: '',
-        password: ''
+        password: '',
+        verificationCode:''
       },
-      verificationCode: '',
-      isPassVerify: false,
       imgUrl: null,
       rules: {
         username: [
-          { required: true, message: '输入不能为空', trigger: 'change' }
+          { required: true, message: '用户名不能为空', trigger: 'change' }
         ],
         password: [
-          { required: true, message: '输入不能为空', trigger: 'change' }
+          { required: true, message: '密码不能为空', trigger: 'change' }
         ]
       }
     }
@@ -94,27 +92,28 @@ export default {
           btoa(new Uint8Array(err.data).reduce((data, byte) => data + String.fromCharCode(byte), ''));
       });
     },
-    loginSystem (formName) {
+    doLogin (formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          this.loginForm.password = sha256(this.loginForm.password + this.loginForm.username)
-          this.VerifyAndSetCookie(this.loginForm).then(res => {
+          //对密码进行MD5加密
+          this.loginForm.password = md5(this.loginForm.password);
+          doLogin(this.loginForm).then(res => {
+            console.log(res);
           }).catch(error => {
-            this.refreshImg()
-            if (error.data) this.$message.error(error.data.errorMsg)
+            console.log(error);
           })
         }
       })
     },
-    async VerifyAndSetCookie (loginForm) {
-      let res = await this.$store.dispatch('Login', loginForm)
-      if (res.data.errorCode !== 0) {
-        this.$message.error(res.data.errorMsg)
-      } else {
-        await this.$store.dispatch('GetInfo')
-        this.$router.push({name: 'index'})
-      }
-    }
+    // async VerifyAndSetCookie (loginForm) {
+    //   let res = await this.$store.dispatch('Login', loginForm)
+    //   if (res.data.errorCode !== 0) {
+    //     this.$message.error(res.data.errorMsg)
+    //   } else {
+    //     await this.$store.dispatch('GetInfo')
+    //     this.$router.push({name: 'index'})
+    //   }
+    // }
   }
 }
 </script>

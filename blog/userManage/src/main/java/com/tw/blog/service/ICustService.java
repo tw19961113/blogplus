@@ -7,6 +7,11 @@ import org.springframework.stereotype.Service;
 /**
  * by TanWei 2021/1/5
  **/
-@Service
 public interface ICustService extends IService<TCust> {
+    /**
+     * 登录方法，查询用户
+     * @param userName
+     * @return
+     */
+    TCust selectUserByUserName(String userName);
 }

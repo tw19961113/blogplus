@@ -23,6 +23,7 @@
         <mybatis.plus.version>3.3.1</mybatis.plus.version>
         <lombok.version>1.18.2</lombok.version>
         <fastjson.version>1.2.70</fastjson.version>
+        <junit.version>4.12</junit.version>
     </properties>
     <!-- 配置在父工程中要管理的依赖
     dependencyManagement中定义的只是依赖的声明，
@@ -80,6 +81,12 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
+            </dependency>
+            <!--单元测试-->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

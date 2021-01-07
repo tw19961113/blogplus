@@ -1,12 +1,17 @@
 package com.tw.blog.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.tw.blog.pojo.TUser;
+import com.sun.corba.se.impl.oa.toa.TOA;
+import com.tw.blog.pojo.TCust;
+import com.tw.blog.service.ICustService;
 import com.tw.blog.service.IUserService;
+import com.tw.blog.utils.Constant;
+import com.tw.blog.utils.RedisUtil;
 import com.tw.blog.utils.RespBean;
 import com.tw.blog.utils.VerifyCodeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.UUID;
 
 /**
  * by TanWei 2021/1/6
@@ -23,15 +29,48 @@ import java.io.OutputStream;
 @Slf4j
 public class UserController {
 
+    @Autowired
+    private RedisUtil redisUtil;
+
+    @Autowired
+    private ICustService custService;
+
     /**
      * 用户登录
      * @return
      */
     @RequestMapping("/doLogin")
-    public JSONObject doLogin(){
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("hello","oo");
-        return jsonObject;
+    public RespBean doLogin(@RequestBody JSONObject jsonObject){
+
+        String verificationCode = jsonObject.getString("verificationCode");//验证码
+        //首先判断验证码
+        String codeTime = redisUtil.get("codeTime");
+        long time = System.currentTimeMillis() - Long.parseLong(codeTime);
+        if(time > 1000*120){
+            //如果时间超过两分钟，则提示验证码过期
+            return RespBean.buildResult(Constant.ERROR.getCode(),"验证码已过期");
+        }else if(!verificationCode.equals(redisUtil.get("verCode"))){
+            return RespBean.buildResult(Constant.ERROR.getCode(),"验证码错误");
+        }else {
+            String userName = jsonObject.getString("userName");
+            TCust tCust = custService.selectUserByUserName(userName);
+            if(tCust == null){
+                return RespBean.buildResult(Constant.ERROR.getCode(),"用户不存在");
+            }else {
+                String password = jsonObject.getString("password");
+                if (!password.equals(tCust.getPasswd())){
+                    return RespBean.buildResult(Constant.ERROR.getCode(),"用户名或者密码错误");
+                }else {
+                    //验证通过
+                    //生成token
+                    String token = String.valueOf(UUID.randomUUID());
+                    //存入redis
+                    redisUtil.set("token"+userName,token);
+                    return RespBean.buildResult(Constant.SUCCESS.getCode(),"登陆成功", token);
+                }
+            }
+        }
+
     }
 
     /**
@@ -47,13 +86,13 @@ public class UserController {
         response.setContentType("image/jpeg");
         // 生成随机字串
         String verifyCode = VerifyCodeUtils.generateVerifyCode(4);
-        // 存入会话session
-        HttpSession session = request.getSession(true);
+        // 存入redis
         // 删除以前的
-        session.removeAttribute("verCode");
-        session.removeAttribute("codeTime");
-        session.setAttribute("verCode", verifyCode.toLowerCase());
-        session.setAttribute("codeTime", System.currentTimeMillis());
+        redisUtil.delete("verCode");
+        redisUtil.delete("codeTime");
+        redisUtil.set("verCode",verifyCode.toLowerCase());
+        redisUtil.set("codeTime",String.valueOf(System.currentTimeMillis()));
+
         // 生成图片
         int w = 100, h = 30;
         OutputStream out = response.getOutputStream();
