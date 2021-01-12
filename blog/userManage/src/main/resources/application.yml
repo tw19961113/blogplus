@@ -5,7 +5,7 @@ spring:
     name: userManage
   #数据库配置
   datasource:
-    url: jdbc:mysql://localhost:3306/myblog?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    url: jdbc:mysql://localhost:3306/myblog?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
     username: root
     password:
     driver-class-name: com.mysql.jdbc.Driver
@@ -29,6 +29,9 @@ eureka:
 logging:
   file: E://logs/${spring.application.name}-${server.port}.logs
 mybatis-plus:
-  mapper-locations: classpath:mapper/*/*Mapper.xml
+  mapper-locations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.tw.blog.pojo
+  configuration:
+    map-underscore-to-camel-case: true
 
 

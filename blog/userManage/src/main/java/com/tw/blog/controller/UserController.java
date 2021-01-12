@@ -1,10 +1,8 @@
 package com.tw.blog.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.sun.corba.se.impl.oa.toa.TOA;
 import com.tw.blog.pojo.TCust;
 import com.tw.blog.service.ICustService;
-import com.tw.blog.service.IUserService;
 import com.tw.blog.utils.Constant;
 import com.tw.blog.utils.RedisUtil;
 import com.tw.blog.utils.RespBean;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
@@ -41,15 +38,16 @@ public class UserController {
      */
     @RequestMapping("/doLogin")
     public RespBean doLogin(@RequestBody JSONObject jsonObject){
-
+        log.info("----用户登录，入参：",String.valueOf(jsonObject));
         String verificationCode = jsonObject.getString("verificationCode");//验证码
         //首先判断验证码
-        String codeTime = redisUtil.get("codeTime");
+        String codeTime = redisUtil.get("codeTime"+verificationCode.toLowerCase());
+        if("".equals(codeTime)) return RespBean.buildResult(Constant.ERROR.getCode(),"验证码已过期");
         long time = System.currentTimeMillis() - Long.parseLong(codeTime);
         if(time > 1000*120){
             //如果时间超过两分钟，则提示验证码过期
             return RespBean.buildResult(Constant.ERROR.getCode(),"验证码已过期");
-        }else if(!verificationCode.equals(redisUtil.get("verCode"))){
+        }else if(!verificationCode.equalsIgnoreCase(redisUtil.get("verCode"+verificationCode.toLowerCase()))){
             return RespBean.buildResult(Constant.ERROR.getCode(),"验证码错误");
         }else {
             String userName = jsonObject.getString("userName");
@@ -70,7 +68,6 @@ public class UserController {
                 }
             }
         }
-
     }
 
     /**
@@ -90,13 +87,12 @@ public class UserController {
         // 删除以前的
         redisUtil.delete("verCode");
         redisUtil.delete("codeTime");
-        redisUtil.set("verCode",verifyCode.toLowerCase());
-        redisUtil.set("codeTime",String.valueOf(System.currentTimeMillis()));
 
+        redisUtil.set("verCode"+verifyCode.toLowerCase(),verifyCode.toLowerCase());
+        redisUtil.set("codeTime"+verifyCode.toLowerCase(),String.valueOf(System.currentTimeMillis()));
         // 生成图片
         int w = 100, h = 30;
         OutputStream out = response.getOutputStream();
         VerifyCodeUtils.outputImage(w, h, out, verifyCode);
-
     }
 }

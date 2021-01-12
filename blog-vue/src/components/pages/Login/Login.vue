@@ -33,7 +33,7 @@
                   v-model="loginForm.password">
                 </el-input>
               </el-form-item>
-              <el-form-item>
+              <el-form-item prop="verificationCode">
                 <el-input
                   type="text"
                   class="verification-code-input"
@@ -73,6 +73,9 @@ export default {
         ],
         password: [
           { required: true, message: '密码不能为空', trigger: 'change' }
+        ],
+        verificationCode: [
+          { required: true, message: '验证码不能为空', trigger: 'change' }
         ]
       }
     }
@@ -88,32 +91,43 @@ export default {
     refreshImg () {
       getVerification()
         .catch(err=>{
-        this.imgUrl = 'data:image/jpeg;base64,' +
+          console.log(err)
+          this.imgUrl = 'data:image/jpeg;base64,' +
           btoa(new Uint8Array(err.data).reduce((data, byte) => data + String.fromCharCode(byte), ''));
       });
     },
-    doLogin (formName) {
+    doLogin: function (formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
           //对密码进行MD5加密
-          this.loginForm.password = md5(this.loginForm.password);
-          doLogin(this.loginForm).then(res => {
-            console.log(res);
+          doLogin({"userName":this.loginForm.username,"password":md5(this.loginForm.password),
+            "verificationCode":this.loginForm.verificationCode}).then(response => {
+              if(response.data.status == 200){
+                this.$message({
+                  showClose: true,
+                  message: response.data.msg,
+                  type: 'success'
+                });
+                //将后端生成的token存入session
+                window.sessionStorage.setItem("token"+this.loginForm.username,response.data.data);
+                this.$router.push({name: 'index'});
+              }else {
+                this.$message({
+                  showClose: true,
+                  message: response.data.msg,
+                  type: 'error'
+                });
+              }
           }).catch(error => {
-            console.log(error);
+            this.$message({
+              showClose: true,
+              message: "系统故障，请联系管理员！",
+              type: 'error'
+            });
           })
         }
       })
-    },
-    // async VerifyAndSetCookie (loginForm) {
-    //   let res = await this.$store.dispatch('Login', loginForm)
-    //   if (res.data.errorCode !== 0) {
-    //     this.$message.error(res.data.errorMsg)
-    //   } else {
-    //     await this.$store.dispatch('GetInfo')
-    //     this.$router.push({name: 'index'})
-    //   }
-    // }
+    }
   }
 }
 </script>

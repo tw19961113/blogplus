@@ -11,14 +11,14 @@ const service = axios.create({
 service.interceptors.response.use(
   response => {
     const res = response.data
-    if (res.errorCode !== 0) {
+    if (res instanceof ArrayBuffer) {
       if (res.errorCode === 1004) {
         // 清除登录信息
-        store.dispatch('FedLogOut').then(() => {
-          router.replace({
-            name: 'login'
-          })
-        })
+        // store.dispatch('FedLogOut').then(() => {
+        //   router.replace({
+        //     name: 'login'
+        //   })
+        // })
       }
       return Promise.reject(response)
     } else {
