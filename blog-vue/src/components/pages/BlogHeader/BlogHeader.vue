@@ -76,8 +76,8 @@
           <router-link :to="{ name: 'writeArticle'}" class="nav-menu-link"><i class="icon iconfont icon-xiepinglun"></i>写博客</router-link>
         </li>
         <li class="nav-menu">
-          <router-link :to="{ name: 'login'}" class="nav-menu-link"><i class="icon iconfont icon-denglu"></i>登录</router-link>
-        </li>
+        <router-link :to="{ name: 'login'}" class="nav-menu-link"><i class="icon iconfont icon-denglu"></i>登录</router-link>
+      </li>
       </ul>
     </div>
   </div>

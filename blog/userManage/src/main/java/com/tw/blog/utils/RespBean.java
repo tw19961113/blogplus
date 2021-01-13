@@ -18,10 +18,18 @@ public class RespBean<T> {
         return new RespBean(status,msg);
     }
 
+    public static RespBean buildResult(Integer status){
+        return new RespBean(status);
+    }
+
     public RespBean(Integer status, String msg, T data) {
         this.status = status;
         this.msg = msg;
         this.data = data;
+    }
+
+    public RespBean(Integer status) {
+        this.status = status;
     }
 
     public static RespBean buildResult(Integer status, String msg, Object data){

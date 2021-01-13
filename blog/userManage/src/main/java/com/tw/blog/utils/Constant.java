@@ -5,8 +5,12 @@ package com.tw.blog.utils;
  **/
 public enum Constant {
 
+    /**
+     * 通用
+     */
     SUCCESS("成功", 200),
-    ERROR("失败",500);
+    ERROR("失败",500),
+    INVALID_TOKEN("无效的token",401);
 
     private String desc;//文字描述
     private Integer code; //对应的代码

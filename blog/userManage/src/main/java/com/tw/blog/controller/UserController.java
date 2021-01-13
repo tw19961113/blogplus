@@ -12,11 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import sun.util.calendar.CalendarDate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Calendar;
 import java.util.UUID;
 
 /**
@@ -62,8 +64,16 @@ public class UserController {
                     //验证通过
                     //生成token
                     String token = String.valueOf(UUID.randomUUID());
-                    //存入redis
-                    redisUtil.set("token"+userName,token);
+                    //更新token
+                    tCust.setToken(token);
+                    try {
+                        custService.updateToken(tCust);
+                        //存入redis
+                        redisUtil.set(token,String.valueOf(System.currentTimeMillis()));
+                    }catch (RuntimeException e){
+                        log.error("----UserController doLogin updateToken error----",e);
+                        return RespBean.buildResult(Constant.ERROR.getCode(),"登陆失败");
+                    }
                     return RespBean.buildResult(Constant.SUCCESS.getCode(),"登陆成功", token);
                 }
             }
@@ -95,4 +105,41 @@ public class UserController {
         OutputStream out = response.getOutputStream();
         VerifyCodeUtils.outputImage(w, h, out, verifyCode);
     }
+/*
+    *//**
+     * 前端每进行一次请求之前都先请求这个接口
+     * @param jsonObject
+     * @return
+     *//*
+    @RequestMapping("/checkLogin")
+    public RespBean checkLogin(@RequestBody JSONObject jsonObject){
+        //redis key 存放token，value存放时间，token有效时间30分钟
+        String token = jsonObject.getString("token");
+        String time = redisUtil.get(token);
+        if (null == time){
+            //token不存在
+            return RespBean.buildResult(Constant.INVALID_TOKEN.getCode());
+        }else {
+           Long now = System.currentTimeMillis() - Long.parseLong(time);
+           if(now > 1800000){
+               //长时间未操作，自动下线
+               redisUtil.delete(token);
+               try {
+                   TCust tCust = new TCust();
+                   tCust.setToken(null);
+                   custService.updateToken(tCust);
+               } catch (RuntimeException e) {
+                   log.error("----UserController checkLogin updateToken error----",e);
+                   return RespBean.buildResult(Constant.ERROR.getCode());
+               }
+               return RespBean.buildResult(Constant.INVALID_TOKEN.getCode());
+           }else {
+               //token合法
+               //更新redis里token的时间
+               redisUtil.delete(token);
+               redisUtil.set(token,String.valueOf(System.currentTimeMillis()));
+               return RespBean.buildResult(Constant.SUCCESS.getCode());
+           }
+        }
+    }*/
 }
