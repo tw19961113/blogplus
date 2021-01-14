@@ -18,7 +18,7 @@ public interface ICustService extends IService<TCust> {
      * 更新用户token
      * @param tCust
      */
-    void updateToken(TCust tCust) throws RuntimeException;
+    void updateCust(TCust tCust) throws RuntimeException;
 
     /**
      * 用户token检验
@@ -26,4 +26,11 @@ public interface ICustService extends IService<TCust> {
      * @return
      */
     boolean checkToken(String token);
+
+    /**
+     * 查找用户
+     * @param tCust
+     * @return
+     */
+    TCust selectUser(TCust tCust);
 }

@@ -1,5 +1,4 @@
 import axios from 'axios'
-import store from '../store'
 import router from '@/router'
 
 // 创建axios实例
@@ -12,15 +11,15 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     if (res instanceof ArrayBuffer) {
-      if (res.status === 401) {
-        // token无效，跳转到登录页，并且清除session里面的token
-        window.sessionStorage.removeItem('token').then(() => {
-          router.replace({
-            name: 'login'
-          })
-        })
-      }
       return Promise.reject(response)
+    }
+    if (res.status === 401) {
+      // token无效，跳转到登录页，并且清除session里面的token
+      localStorage.removeItem('token').then(() => {
+        router.replace({
+          name: 'login'
+        })
+      })
     } else {
       return response
     }
@@ -30,12 +29,11 @@ service.interceptors.response.use(
   }
 )
 export default service
-
 // 添加请求拦截器，在请求头中加token
-axios.interceptors.request.use(
+service.interceptors.request.use(
   config => {
-    if (window.sessionStorage.getItem('token')) {
-      config.headers.Authorization = window.sessionStorage.getItem('token')
+    if (localStorage.getItem('token')) {
+      config.headers.Authorization = localStorage.getItem('token')
     }
     return config
   },

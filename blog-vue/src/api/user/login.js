@@ -15,3 +15,11 @@ export function doLogin (data) {
     data
   })
 }
+
+export function logout (data) {
+  return request({
+    url: url + '/logout',
+    method: 'POST',
+    data
+  })
+}

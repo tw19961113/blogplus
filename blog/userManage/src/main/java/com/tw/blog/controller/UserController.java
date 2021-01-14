@@ -1,24 +1,23 @@
 package com.tw.blog.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.tw.blog.config.MinioConfig;
 import com.tw.blog.pojo.TCust;
 import com.tw.blog.service.ICustService;
-import com.tw.blog.utils.Constant;
-import com.tw.blog.utils.RedisUtil;
-import com.tw.blog.utils.RespBean;
-import com.tw.blog.utils.VerifyCodeUtils;
+import com.tw.blog.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sun.util.calendar.CalendarDate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -33,6 +32,13 @@ public class UserController {
 
     @Autowired
     private ICustService custService;
+
+    @Autowired
+    private MinioUtil minioUtil;
+
+    @Autowired
+    private MinioConfig minioConfig;
+
 
     /**
      * 用户登录
@@ -67,7 +73,7 @@ public class UserController {
                     //更新token
                     tCust.setToken(token);
                     try {
-                        custService.updateToken(tCust);
+                        custService.updateCust(tCust);
                         //存入redis
                         redisUtil.set(token,String.valueOf(System.currentTimeMillis()));
                     }catch (RuntimeException e){
@@ -105,41 +111,35 @@ public class UserController {
         OutputStream out = response.getOutputStream();
         VerifyCodeUtils.outputImage(w, h, out, verifyCode);
     }
-/*
-    *//**
-     * 前端每进行一次请求之前都先请求这个接口
-     * @param jsonObject
-     * @return
-     *//*
-    @RequestMapping("/checkLogin")
-    public RespBean checkLogin(@RequestBody JSONObject jsonObject){
-        //redis key 存放token，value存放时间，token有效时间30分钟
-        String token = jsonObject.getString("token");
-        String time = redisUtil.get(token);
-        if (null == time){
-            //token不存在
-            return RespBean.buildResult(Constant.INVALID_TOKEN.getCode());
-        }else {
-           Long now = System.currentTimeMillis() - Long.parseLong(time);
-           if(now > 1800000){
-               //长时间未操作，自动下线
-               redisUtil.delete(token);
-               try {
-                   TCust tCust = new TCust();
-                   tCust.setToken(null);
-                   custService.updateToken(tCust);
-               } catch (RuntimeException e) {
-                   log.error("----UserController checkLogin updateToken error----",e);
-                   return RespBean.buildResult(Constant.ERROR.getCode());
-               }
-               return RespBean.buildResult(Constant.INVALID_TOKEN.getCode());
-           }else {
-               //token合法
-               //更新redis里token的时间
-               redisUtil.delete(token);
-               redisUtil.set(token,String.valueOf(System.currentTimeMillis()));
-               return RespBean.buildResult(Constant.SUCCESS.getCode());
-           }
+
+    /**
+     * 上传文件
+     */
+    @RequestMapping("/uploadImg")
+    public RespBean uploadImg(@RequestParam(name = "file", required = false) MultipartFile[] file){
+        try {
+            List<String> fileNames = minioUtil.upload(minioConfig.getBucketName(), file);
+            //上传头像成功，将头像存储地址存入数据库
+            TCust tCust = new TCust();
+            tCust.setImgUrl(minioConfig.getEndpoint() + ":" + minioConfig.getPort() + File.separator + minioConfig.getBucketName() + fileNames.get(0));
+            custService.updateCust(tCust);
+            return RespBean.buildResult(200);
+        } catch (Exception e) {
+            log.error("----UserController uploadImg error----",e);
+            return RespBean.buildResult(500);
         }
-    }*/
+    }
+
+    /**
+     * 获取头像路径
+     */
+    @PostMapping("/getUserImgUrl")
+    public RespBean<String> getUserImg(@RequestBody(required = false) JSONObject jsonObject){
+        String token = jsonObject.getString("token");
+        TCust tCust = new TCust();
+        tCust.setToken(token);
+        TCust cust =  custService.selectUser(tCust);
+        return RespBean.buildResult(Constant.SUCCESS.getCode(),Constant.SUCCESS.getDesc(),cust.getImgUrl());
+    }
+
 }

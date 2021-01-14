@@ -31,7 +31,7 @@ public class CustServiceImpl extends ServiceImpl<CustMapper, TCust> implements I
     }
 
     @Override
-    public void updateToken(TCust tCust) throws RuntimeException {
+    public void updateCust(TCust tCust) throws RuntimeException {
         custMapper.updateById(tCust);
     }
 
@@ -50,7 +50,7 @@ public class CustServiceImpl extends ServiceImpl<CustMapper, TCust> implements I
                 try {
                     TCust tCust = new TCust();
                     tCust.setToken(null);
-                    updateToken(tCust);
+                    updateCust(tCust);
                 } catch (RuntimeException e) {
                     log.error("----CustServiceImpl checkLogin updateToken error----",e);
                 }finally {
@@ -64,5 +64,10 @@ public class CustServiceImpl extends ServiceImpl<CustMapper, TCust> implements I
                 return true;
             }
         }
+    }
+
+    @Override
+    public TCust selectUser(TCust tCust) {
+        return custMapper.selectOne(tCust);
     }
 }

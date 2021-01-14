@@ -86,6 +86,8 @@
 <script>
 import { getToken } from '@/utils/auth'
 import { getAvatar } from '@/utils/avatar'
+import { getUserImg } from '@/api/getUserInfo'
+import {logout} from '@/api/user/login'
 export default {
   name: 'blog-header',
   data () {
@@ -105,23 +107,27 @@ export default {
       this.isOpenNavMenu = !this.isOpenNavMenu
     },
     logout () {
-      this.$store.dispatch('Logout').then((res) => {
-        if (res.data.errorCode === 0) {
-          this.isShowUser = false
-          this.$message({
-            message: '已退出',
-            type: 'success'
-          })
-        }
-      }).catch((error) => {
-        console.log(error)
+      this.isShowUser = false
+      this.$message({
+        message: '已退出',
+        type: 'success'
       })
+      // TODO
+      // logout({"token":window.sessionStorage.getItem('token')}).then((res) => {
+      //   if (res.data.errorCode === 0) {
+      //
+      //   }
+      // }).catch((error) => {
+      //   console.log(error)
+      // })
     },
     initHeader () {
-      this.avatarUrl = getAvatar()
+      //this.avatarUrl = getAvatar()
       this.isShowSearchInput = this.$route.name === 'index'
       if (getToken()) {
         this.isShowUser = true
+        //加载头像
+        this.downloadUserImg()
       }
     },
     toLoginPage () {
@@ -129,6 +135,14 @@ export default {
     },
     searchArticlesByKey () {
       if (this.$route.name === 'index') this.$emit('searchArticlesByKey', this.articleData)
+    },
+    downloadUserImg(){
+      const data = {'token':localStorage.getItem('token')}
+      getUserImg(data).then(res =>{
+        this.avatarUrl = res.data.data;
+      }).catch(error =>{
+        console.log(error)
+      })
     }
   }
 }

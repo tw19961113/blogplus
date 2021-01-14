@@ -1,6 +1,7 @@
 package com.tw.blog.config;
 
 import com.tw.blog.filter.CheckToken;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -10,6 +11,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  **/
 @Configuration
 public class InterceptorConfig implements WebMvcConfigurer {
+
+    /**
+     * 讲拦截器交给spring容器管理，否在无法注入service
+     * @return
+     */
+    @Bean
+    public CheckToken checkToken(){
+        return new CheckToken();
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -21,7 +31,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 "/getVerification"
         };
         //注册token检查拦截器
-        registry.addInterceptor(new CheckToken())
+        registry.addInterceptor(checkToken())
                 .addPathPatterns(addPathPatterns)
                 .excludePathPatterns(excludePathPaterns);
     }
