@@ -109,7 +109,7 @@ export default {
                   type: 'success'
                 });
                 //将后端生成的token存入session
-                localStorage.setItem('token',response.data.data);
+                sessionStorage.setItem('token',response.data.data);
                 this.$router.push({name: 'index'});
               }else {
                 this.$message({

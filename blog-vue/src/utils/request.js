@@ -6,25 +6,25 @@ const service = axios.create({
   timeout: 30000 // 请求超时时间
 })
 
-// respone拦截器
+// response拦截器
 service.interceptors.response.use(
   response => {
     const res = response.data
     if (res instanceof ArrayBuffer) {
       return Promise.reject(response)
+    } else {
+      return response
     }
-    if (res.status === 401) {
+  },
+  error => {
+    if (error) {
       // token无效，跳转到登录页，并且清除session里面的token
       localStorage.removeItem('token').then(() => {
         router.replace({
           name: 'login'
         })
       })
-    } else {
-      return response
     }
-  },
-  error => {
     return Promise.reject(error)
   }
 )
@@ -32,8 +32,8 @@ export default service
 // 添加请求拦截器，在请求头中加token
 service.interceptors.request.use(
   config => {
-    if (localStorage.getItem('token')) {
-      config.headers.Authorization = localStorage.getItem('token')
+    if (sessionStorage.getItem('token')) {
+      config.headers.Authorization = sessionStorage.getItem('token')
     }
     return config
   },

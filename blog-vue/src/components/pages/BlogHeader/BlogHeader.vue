@@ -137,8 +137,9 @@ export default {
       if (this.$route.name === 'index') this.$emit('searchArticlesByKey', this.articleData)
     },
     downloadUserImg(){
-      const data = {'token':localStorage.getItem('token')}
+      const data = {'token':sessionStorage.getItem('token')}
       getUserImg(data).then(res =>{
+        console.log(res)
         this.avatarUrl = res.data.data;
       }).catch(error =>{
         console.log(error)

@@ -22,5 +22,4 @@ export function getUserImg (data) {
     method: 'POST',
     data
   })
- // return axios.get(url + '/getUserImgUrl', JSON.stringify({data}), {headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
 }

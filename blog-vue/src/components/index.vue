@@ -1,6 +1,6 @@
 <template>
   <div>
-    <blog-header @searchArticlesByKey="searchArticlesByKey" />
+    <blog-header @searchArticlesByKey="searchArticlesByKey" ref="initHeader"/>
     <div class="main-container ">
       <div class="index-page-container" :class="{'enter-animation-active': isActive}">
         <div class="canvas-wrapper">
@@ -137,6 +137,7 @@ export default {
     canvas()
     this.isActive = true
     this.getArticle()
+    this.$refs.initHeader.initHeader()
   },
   methods: {
     closeBoard () {
